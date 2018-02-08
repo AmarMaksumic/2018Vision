@@ -1,3 +1,4 @@
+import numpy as np
 import cv2
 
 
@@ -66,6 +67,23 @@ def detect_canny_edges(input, debug=False):
         cv2.imshow("Image after applying Canny",canny_image)
     # # Display Image
     return cv2.convertScaleAbs(canny_image)
+
+
+def dilate_edges(img):
+    # dilation to strengthen the edges
+    kernel = np.ones((3,3), np.uint8)
+    # Creating the kernel for dilation
+    dilated_image = cv2.dilate(img,kernel,iterations=1)
+    return dilated_image
+
+
+def threshold_OTSU(img):
+    # Display Image
+    # Thresholding the image
+    _,thresh_image = cv2.threshold(img,0,255,cv2.THRESH_OTSU)
+
+    return thresh_image
+
 
 
 def mask(input, mask):
