@@ -7,6 +7,8 @@ this repository is divided into 2 implementations, each self contained
 
 Python is used for rapid prototyping. C++ code is used in Jetson code. 
 
+![Vision Workflow](https://github.com/steelhawks/2018Vision/blob/master/jetson_workflow.png)
+
 ## requirements
 ### python
 * python 2.7
