@@ -7,34 +7,35 @@ uses contour lines and rough area calculations
 """
 
 import cv2
+import math
 import filters
-import random
-
-FRAME_WIDTH = 768
-FRAME_HEIGHT = 1024
+import colors
 
 MIN_SQUARE_AREA = 400
 
-def process(img, profile, debug):
+def process(img, profile, camera, debug):
 
-    img = filters.resize(img, FRAME_WIDTH, FRAME_HEIGHT )
+    FRAME_WIDTH = camera.FRAME_WIDTH
+    FRAME_HEIGHT = camera.FRAME_HEIGHT
+
+    img = filters.resize(img, camera.FRAME_WIDTH, camera.FRAME_HEIGHT )
 
     original_img = img
 
-    mask = filters.rgb_threshold(img, profile, strong=True)
+
+    mask = filters.rgb_threshold(img, profile, strong=False)
 
     img = filters.mask(img, mask)
+
     if debug:
         cv2.imshow("yellow threshold", img)
 
     img = filters.hsv_threshold(img, profile)
-    if debug:
-        cv2.imshow("hsv", img)
+    # cv2.imshow("hsv", img)
 
     img = filters.median_filter(img)
     if debug:
         cv2.imshow('median filter', img)
-
 
     _, contours, hierarchy = cv2.findContours(img,
                                               cv2.RETR_EXTERNAL,
@@ -52,23 +53,20 @@ def process(img, profile, debug):
         #
         if area > MIN_SQUARE_AREA:
             contour_list.append(contour)
-            blue = random.randint(0,255)
-            red = random.randint(0,255)
-            green = random.randint(0,255)
 
+            color = colors.random()
 
-            color = (blue, red, green)
 
             x,y,w,h = cv2.boundingRect(contour)
-
-            print index, area, len(approx), blue, red, green
 
             #
             # if it is a cube, then outbound rectangle should be close to a square
             #
-            if is_square(w,h):
-                print 'not a square'
+            if is_not_square(w,h):
+                cv2.rectangle(original_img, (x, y), (x + w, y + h), colors.WHITE, 2)
                 continue
+
+            cv2.rectangle(original_img,(x,y),(x+w,y+h),colors.GREEN ,2)
 
             print 'square: %s,%s' % (w,h)
             print w/h, h/w
@@ -76,15 +74,40 @@ def process(img, profile, debug):
             center_mass_x = x+w/2
             center_mass_y = y+h/2
 
+
+            angle = get_angle( camera, center_mass_x, center_mass_y )
+
+            # print 'x:%s, y:%s angle:%s ' % ( center_mass_x, center_mass_y, angle )
+
             cv2.drawContours(original_img, contours,  index, color, 2)
-            cv2.rectangle(original_img,(x,y),(x+w,y+h),(0,255,0),2)
             cv2.circle(original_img, (center_mass_x, center_mass_y),5,color, -1);
             cv2.line(original_img,(FRAME_WIDTH/2,FRAME_HEIGHT),(center_mass_x,center_mass_y),color,2)
 
+            font = cv2.FONT_HERSHEY_DUPLEX
+
+            coordinate_text = 'x:%s y:%s ' % ( center_mass_x, center_mass_y)
+            area_text = 'area:%s' % (area)
+            angle_text = 'angle:%.2f' % (angle)
+
+            cv2.putText(original_img, coordinate_text, (x,y-35), font, .4, colors.WHITE , 1, cv2.LINE_AA)
+            cv2.putText(original_img, area_text, (x, y-20), font, .4, colors.WHITE, 1, cv2.LINE_AA)
+            cv2.putText(original_img, angle_text, (x, y - 5), font, .4, colors.WHITE, 1, cv2.LINE_AA)
+
+    # create a line for the center of frame
+    cv2.line(original_img, (FRAME_WIDTH / 2, FRAME_HEIGHT), (FRAME_WIDTH/2, 0), colors.WHITE, 4)
+
     return original_img
 
+def get_angle( camera, x, y ):
 
-def is_square(w,h):
+    a = float(abs(camera.FRAME_WIDTH/2 - x ))
+    b = float(camera.FRAME_HEIGHT - y)
+
+    radians = math.atan(a/b)
+    angle = radians * 180 / math.pi
+    return angle
+
+def is_not_square(w,h):
     if w > h:
        return float(w)/h > 1.5
     else:

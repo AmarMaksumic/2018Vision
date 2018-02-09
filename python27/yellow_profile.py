@@ -1,8 +1,14 @@
+"""
+OpenCV Constants for filters
+
+"""
+
+
 # RGB thresholds
-red = [0.0, 255.0]
-green = [80.41726618705036, 255.0]
-green_strong = [150.41726618705036, 255.0]
-blue = [0.0, 115]
+red = [0, 255]
+green = [142, 255.0]
+green_strong = [142.41726618705036, 255.0]
+blue = [0, 110]
 
 # HSL thresholds
 hsl_hue = [22.66187050359712, 180.0]

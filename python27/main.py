@@ -1,8 +1,10 @@
 import cv2
-import yellow_profile
-import tracker_frame
 
-VIDEO_SOURCE_NUMBER = 0
+import yellow_profile
+from cameras import logitech_c270, generic
+from pipelines import cube_tracker
+
+VIDEO_SOURCE_NUMBER = 1
 
 
 def video(debug=False):
@@ -13,7 +15,10 @@ def video(debug=False):
 
         _, frame = cap.read()
 
-        img = tracker_frame.process(frame, yellow_profile, debug)
+        img = cube_tracker.process(frame,
+                                   yellow_profile,
+                                   logitech_c270,
+                                   debug)
 
         cv2.imshow('frame', img )
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -26,11 +31,14 @@ def video(debug=False):
 def single_frame(debug=False):
 
     img = cv2.imread("frc_cube.jpg")
-    img = tracker_frame.process(img, yellow_profile, debug)
+    img = cube_tracker.process(img,
+                               yellow_profile,
+                               generic,
+                               debug)
 
     cv2.imshow('Objects Detected',img)
     cv2.waitKey()
 
-
+#TODO enable options to be passed from command line
 if __name__ == '__main__':
-    single_frame()
+    single_frame(debug=False)
