@@ -13,6 +13,8 @@ import colors
 
 MIN_SQUARE_AREA = 400
 
+CUBE_LENGTH = 13
+
 def process(img, profile, camera, debug):
 
     FRAME_WIDTH = camera.FRAME_WIDTH
@@ -22,16 +24,17 @@ def process(img, profile, camera, debug):
 
     original_img = img
 
-
     mask = filters.rgb_threshold(img, profile, strong=False)
+    if debug:
+        cv2.imshow("color filter", img)
 
     img = filters.mask(img, mask)
-
     if debug:
-        cv2.imshow("yellow threshold", img)
+        cv2.imshow("threshold", img)
 
     img = filters.hsv_threshold(img, profile)
-    # cv2.imshow("hsv", img)
+    if debug:
+        cv2.imshow("hsv", img)
 
     img = filters.median_filter(img)
     if debug:
@@ -45,8 +48,8 @@ def process(img, profile, camera, debug):
     for (index,contour) in enumerate(contours):
 
         area = cv2.contourArea(contour)
-        peri = cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+        # peri = cv2.arcLength(contour, True)
+        # approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
 
         #
         # limit the number of contours to process
@@ -55,7 +58,6 @@ def process(img, profile, camera, debug):
             contour_list.append(contour)
 
             color = colors.random()
-
 
             x,y,w,h = cv2.boundingRect(contour)
 
@@ -67,15 +69,15 @@ def process(img, profile, camera, debug):
                 continue
 
             cv2.rectangle(original_img,(x,y),(x+w,y+h),colors.GREEN ,2)
-
-            print 'square: %s,%s' % (w,h)
-            print w/h, h/w
+            #
+            # print 'square: %s,%s' % (w,h)
+            # print w/h, h/w
 
             center_mass_x = x+w/2
             center_mass_y = y+h/2
 
-
             angle = get_angle( camera, center_mass_x, center_mass_y )
+            distance = get_distance(w, CUBE_LENGTH, camera.FOCAL_LENGTH)
 
             # print 'x:%s, y:%s angle:%s ' % ( center_mass_x, center_mass_y, angle )
 
@@ -86,8 +88,8 @@ def process(img, profile, camera, debug):
             font = cv2.FONT_HERSHEY_DUPLEX
 
             coordinate_text = 'x:%s y:%s ' % ( center_mass_x, center_mass_y)
-            area_text = 'area:%s' % (area)
-            angle_text = 'angle:%.2f' % (angle)
+            area_text = 'area:%s width:%s' % (area,w)
+            angle_text = 'angle:%.2f  distance:%s' % (angle, distance)
 
             cv2.putText(original_img, coordinate_text, (x,y-35), font, .4, colors.WHITE , 1, cv2.LINE_AA)
             cv2.putText(original_img, area_text, (x, y-20), font, .4, colors.WHITE, 1, cv2.LINE_AA)
@@ -98,6 +100,7 @@ def process(img, profile, camera, debug):
 
     return original_img
 
+
 def get_angle( camera, x, y ):
 
     a = float(abs(camera.FRAME_WIDTH/2 - x ))
@@ -107,8 +110,14 @@ def get_angle( camera, x, y ):
     angle = radians * 180 / math.pi
     return angle
 
+
+def get_distance( width_pixel, width_actual, focal_length ):
+
+    return focal_length * width_actual / width_pixel
+
+
 def is_not_square(w,h):
     if w > h:
-       return float(w)/h > 1.5
+       return float(w)/h > 2
     else:
-        return float(h)/w > 1.5
+        return float(h)/w > 2
