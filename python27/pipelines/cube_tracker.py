@@ -15,7 +15,13 @@ MIN_SQUARE_AREA = 400
 
 CUBE_LENGTH = 13
 
-def process(img, profile, camera, debug):
+rgb_window_active = False
+hsv_window_active = False
+
+def process(img, controls, camera, debug):
+    global rgb_window_active, hsv_window_active
+
+    profile = controls.profile
 
     FRAME_WIDTH = camera.FRAME_WIDTH
     FRAME_HEIGHT = camera.FRAME_HEIGHT
@@ -24,17 +30,23 @@ def process(img, profile, camera, debug):
 
     original_img = img
 
-    mask = filters.rgb_threshold(img, profile, strong=False)
-    if debug:
-        cv2.imshow("color filter", img)
+    rgb_mask = filters.rgb_threshold(img, profile)
+    if controls.show_rgb_mask:
+        cv2.imshow("rgb mask", rgb_mask)
+        rgb_window_active = True
+    elif rgb_window_active:
+        cv2.destroyWindow('rgb mask')
+        rgb_window_active = False
 
-    img = filters.mask(img, mask)
-    if debug:
-        cv2.imshow("threshold", img)
+    img = filters.apply_mask(img, rgb_mask)
 
     img = filters.hsv_threshold(img, profile)
-    if debug:
-        cv2.imshow("hsv", img)
+    if controls.show_hsv_mask:
+        cv2.imshow("hsv mask", img)
+        hsv_window_active = True
+    elif hsv_window_active:
+        cv2.destroyWindow('hsv mask')
+        hsv_window_active = False
 
     img = filters.median_filter(img)
     if debug:

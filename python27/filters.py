@@ -28,14 +28,11 @@ def hsv_threshold(input,profile):
     return cv2.inRange(out, (hue[0], sat[0], val[0]),  (hue[1], sat[1], val[1]))
 
 
-def rgb_threshold(input, profile, strong=True):
+def rgb_threshold(input, profile):
 
 
     red = profile.red
     green = profile.green
-    if strong:
-        green = profile.green_strong
-
     blue = profile.blue
 
     out = cv2.cvtColor(input, cv2.COLOR_BGR2RGB)
@@ -86,7 +83,7 @@ def threshold_OTSU(img):
 
 
 
-def mask(input, mask):
+def apply_mask(input, mask):
     """Filter out an area of an image using a binary mask.
     Args:
         input: A three channel numpy.ndarray.

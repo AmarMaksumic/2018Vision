@@ -4,36 +4,41 @@ import yellow_profile
 from cameras import logitech_c270, generic
 from pipelines import cube_tracker
 
-from Tkinter import Tk
-from gui import Controls
+from gui.view import Controls
 
 VIDEO_SOURCE_NUMBER = 0
 
+from Tkinter import Tk
 
 def video(debug=False):
 
     cap = cv2.VideoCapture(VIDEO_SOURCE_NUMBER)
+
     root = Tk()
-    controller = Controls(root, yellow_profile)
-    root.mainloop()
+    controls = Controls(yellow_profile)
+    controls.start(root)
 
     while(True):
 
         _, frame = cap.read()
 
         img = cube_tracker.process(frame,
-                                   controller,
+                                   controls,
                                    logitech_c270,
                                    debug)
 
-        print 'here'
+        # use this instead of root.mainloop()
+        root.update_idletasks()
+        root.update()
+
+        controls.update_profile()
+
         cv2.imshow('frame', img )
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 def single_frame(debug=False):
 

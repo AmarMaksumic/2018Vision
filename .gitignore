@@ -100,3 +100,6 @@ ENV/
 # mypy
 .mypy_cache/
 python27/.idea
+python27/bin
+python27/include
+test_cpp/CMakeFiles
