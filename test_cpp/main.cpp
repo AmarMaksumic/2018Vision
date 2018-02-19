@@ -74,7 +74,7 @@ int process_video(int cameraSource)
 int main(void) {
 
 //    int exitCode = singleFrame("frc_cube.jpg");
-    int exitCode = process_video(1);
+    int exitCode = process_video(0);
     std::cout << exitCode;
 
 }

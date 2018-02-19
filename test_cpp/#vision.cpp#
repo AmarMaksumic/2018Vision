@@ -1,5 +1,7 @@
 #include "vision.hpp"
+#include <climits>
 using namespace std;
+
 
 bool isValidArea(int camera_height, int camera_width, contour_type &contour){
 
@@ -31,7 +33,19 @@ bool isValidArea(int camera_height, int camera_width, contour_type &contour){
 }
 
 bool isCubeShape (contour_type &contour) {
-    return true;
+
+  return true;
+
+  /*vector<cv::Point> approx;
+  //cv::approxPolyDP(contour, approx, cv::arcLength(contour, true) * 0.01, true);
+    if( approx.size() < 2 ){
+        return false;
+    }
+    if( approx.size() > 20 ){
+        return false;
+    }
+
+    return true; */
 }
 
 float get_angle( cv::Mat image, cv::Point point)
@@ -46,14 +60,15 @@ float get_angle( cv::Mat image, cv::Point point)
 
 
 float get_distance( int width_pixel ){
-    return float(CAMERA_FOCAL_LENGTH * CUBE_LENGTH) / width_pixel;
+  //cout << width_pixel << endl;  
+  int cam_focal = CAMERA_FOCAL_LENGTH * CUBE_LENGTH;
+  float intermediary = cam_focal/width_pixel;
+  cout << intermediary << endl;
+  return intermediary;
 }
 
-VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
-    	ui64 timeBegan = millis_since_epoch();
 
-    VisionResultsPackage res;
-
+void calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     // RGB THRESHOLD
     cv::Mat rgbMat, rgbThreshold;
@@ -73,7 +88,7 @@ VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     cv::bitwise_and(img, img, rgbThresholdOutput, rgbThreshold);
 //
-    //cv::imshow("RGB", rgbThresholdOutput);
+    cv::imshow("RGB", rgbThresholdOutput);
 
     // HSV THRESHOLD
     cv::Mat hsvMat, hsvThreshold;
@@ -86,13 +101,13 @@ VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     // END HSV
 
-    //cv::imshow("HSV", hsvThreshold);
+    cv::imshow("HSV", hsvThreshold);
 
     cv::Mat medianBlurMat;
 
     cv::medianBlur(hsvThreshold, medianBlurMat, MEDIAN_BLUR_LEVEL);
 
-    //cv::imshow("BLUR", medianBlurMat);
+    cv::imshow("BLUR", medianBlurMat);
     //contour detection
     vector<contour_type> contours;
     vector<cv::Vec4i> hierarchy; //throwaway, needed for function
@@ -126,7 +141,6 @@ VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     float shortest_distance = INT_MAX;
     contour_type closest_contour;
-
     for (size_t i = 0; i < contour_to_loop.size(); i++)
     {
         contour_type contour = contour_to_loop[i];
@@ -153,15 +167,29 @@ VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
             angle = get_angle(processedImage, center );
 
             // calculate distance
-            float distance = get_distance(rect.width);
+            float distance;
 
 	    if( distance < shortest_distance ){
-	      res.centerPoint = center;
-	      res.distance = distance;
-	      res.angle = angle;
 	      closest_contour = contour;
 	      shortest_distance = distance;              
 	    }
+
+
+//            void putText(Mat& img, const string& text, Point org,
+//                         int fontFace, double fontScale,
+//                         Scalar color,
+//                         int thickness=1, int lineType=8, bool bottomLeftOrigin=false )¶
+
+            //cv::putText(processedImage, to_string(angle), center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
+
+	    cout << distance << endl;
+	    ostringstream ss;
+	    ss << distance;
+	    string s(ss.str());
+            cv::putText(processedImage, s, center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
+            distance = get_distance(rect.width);
+
+
         }
     }
 
@@ -171,11 +199,4 @@ VisionResultsPackage calculate(const cv::Mat &img, cv::Mat &processedImage) {
     }
 
     cv::line(processedImage, robot_center, top_center, MY_WHITE, 2);
-
-
-	
-	res.timestamp = timeBegan;
-	res.valid = true;	
-	return res;
-
 }

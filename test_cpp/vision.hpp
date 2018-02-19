@@ -8,6 +8,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
 #include <iostream>
+#include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -31,17 +33,17 @@ const cv::Scalar MY_WHITE (255,255,255);
  *  RGB Threshold Levels
  */
 
-const int RGB_RED[2] =   {86,255};
-const int RGB_GREEN[2] = {131,255};
-const int RGB_BLUE[2] = {22,224};
+const int RGB_RED[2] =   {0,255};
+const int RGB_GREEN[2] = {142,255};
+const int RGB_BLUE[2] = {0,110};
 
 /**
  *  HSV Threshold Levels
  *
  */
-const int HSV_HUE[2] = {19,38};
-const int HSV_SAT[2] = {105,240};
-const int HSV_VAL[2] = {143,169};
+const int HSV_HUE[2] = {0,38};
+const int HSV_SAT[2] = {78,255};
+const int HSV_VAL[2] = {64,255};
 
 /**
  *  HSL Threshold Levels

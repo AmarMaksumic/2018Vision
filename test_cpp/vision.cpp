@@ -1,4 +1,5 @@
 #include "vision.hpp"
+#include <climits>
 using namespace std;
 
 
@@ -14,15 +15,17 @@ bool isValidArea(int camera_height, int camera_width, contour_type &contour){
         contour_side_ratio = height/width;
     }
 
-    if (contour_side_ratio > SIDE_RATIO) {
+    if (contour_side_ratio > 1.4) {
         return false;
     }
 
     //calculate relevant ratios & values
     double area_ratio = width * height/totalArea * 100;
 
-//    std::cout << area_ratio << std::endl;
-//
+    //std::cout << area_ratio << std::endl;
+    //std::cout << contour_side_ratio << std::endl;
+    
+
     if( area_ratio < 1 ){
         return false;
     }
@@ -31,16 +34,18 @@ bool isValidArea(int camera_height, int camera_width, contour_type &contour){
 
 bool isCubeShape (contour_type &contour) {
 
-    vector<cv::Point> approx;
-    cv::approxPolyDP(contour, approx, cv::arcLength(contour, true) * 0.01, true);
-    if( approx.size() < 4 ){
+  return true;
+
+  /*vector<cv::Point> approx;
+  //cv::approxPolyDP(contour, approx, cv::arcLength(contour, true) * 0.01, true);
+    if( approx.size() < 2 ){
         return false;
     }
-    if( approx.size() > 10 ){
+    if( approx.size() > 20 ){
         return false;
     }
 
-    return true;
+    return true; */
 }
 
 float get_angle( cv::Mat image, cv::Point point)
@@ -55,7 +60,11 @@ float get_angle( cv::Mat image, cv::Point point)
 
 
 float get_distance( int width_pixel ){
-    return float(CAMERA_FOCAL_LENGTH * CUBE_LENGTH) / width_pixel;
+  cout << width_pixel << endl;  
+  int cam_focal = CAMERA_FOCAL_LENGTH * CUBE_LENGTH;
+  float intermediary = cam_focal/width_pixel;
+  cout << intermediary << endl;
+  return intermediary;
 }
 
 
@@ -108,6 +117,7 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     //store the convex hulls of any valid contours
     vector<contour_type> contour_hulls;
+    vector<contour_type> valid_contours;
     for (int i = 0; i < (int) contours.size(); i++) {
         contour_type contour = contours[i];
         if (isValidArea( processedImage.rows,
@@ -115,6 +125,7 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
                          contour)) {
             contour_type hull;
             cv::convexHull(contour, hull);
+	    valid_contours.push_back(contour);
             contour_hulls.push_back(hull);
         }
     }
@@ -122,17 +133,19 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
     vector<contour_type> contour_to_loop;
 
     // we can choose to use the contours or its convex hull
-    contour_to_loop = contour_hulls;
-    //contour_to_loop = contours;
+    //contour_to_loop = contour_hulls;
+    contour_to_loop = valid_contours;
 
     cv::Point robot_center( processedImage.cols / 2, processedImage.rows);
     cv::Point top_center( processedImage.cols / 2, 0 );
 
+    float shortest_distance = INT_MAX;
+    contour_type closest_contour;
     for (size_t i = 0; i < contour_to_loop.size(); i++)
     {
         contour_type contour = contour_to_loop[i];
         if (isCubeShape(contour)) {
-            cv::drawContours(processedImage, contour_to_loop, i, MY_GREEN, 1);
+            cv::drawContours(processedImage, contour_to_loop, i, MY_WHITE, 1);
 
             cv::Rect rect = cv::boundingRect(contour);
 
@@ -154,7 +167,12 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
             angle = get_angle(processedImage, center );
 
             // calculate distance
-            float distance;
+            float distance = get_distance(rect.width);
+
+	    if( distance < shortest_distance ){
+	      closest_contour = contour;
+	      shortest_distance = distance;              
+	    }
 
 
 //            void putText(Mat& img, const string& text, Point org,
@@ -163,14 +181,21 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
 //                         int thickness=1, int lineType=8, bool bottomLeftOrigin=false )¶
 
             //cv::putText(processedImage, to_string(angle), center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
-            cv::putText(processedImage, to_string(distance), center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
-            distance = get_distance(rect.width);
+
+	    cout << distance << endl;
+	    ostringstream ss;
+	    ss << distance;
+	    string s(ss.str());
+            cv::putText(processedImage, s, center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
 
 
         }
     }
 
+    if( shortest_distance < INT_MAX ){
+      cv::Rect rect = cv::boundingRect(closest_contour);
+      cv::rectangle(processedImage, rect, MY_GREEN, 2);
+    }
+
     cv::line(processedImage, robot_center, top_center, MY_WHITE, 2);
-
-
 }
