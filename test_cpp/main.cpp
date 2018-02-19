@@ -34,7 +34,7 @@ int singleFrame(string imageSrc )
 
 
 
-int video(int cameraSource)
+int process_video(int cameraSource)
 {
     //Capture stream from webcam.
     cv::VideoCapture capture(cameraSource);
@@ -73,8 +73,8 @@ int video(int cameraSource)
 
 int main(void) {
 
-    int exitCode = singleFrame("frc_cube.jpg");
-
+//    int exitCode = singleFrame("frc_cube.jpg");
+    int exitCode = process_video(1);
     std::cout << exitCode;
 
 }

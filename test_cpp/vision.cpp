@@ -2,16 +2,27 @@
 using namespace std;
 
 
-bool isValidArea(contour_type &contour){
+bool isValidArea(int camera_height, int camera_width, contour_type &contour){
 
     cv::Rect rect = cv::boundingRect(contour);
 
     double width = rect.width, height = rect.height;
-    double totalArea = ( 1024 * 768 );
+    double totalArea = ( camera_height * camera_width );
+    
+    double contour_side_ratio = width/height;
+    if (height > width) {
+        contour_side_ratio = height/width;
+    }
+
+    if (contour_side_ratio > SIDE_RATIO) {
+        return false;
+    }
 
     //calculate relevant ratios & values
     double area_ratio = width * height/totalArea * 100;
 
+//    std::cout << area_ratio << std::endl;
+//
     if( area_ratio < 1 ){
         return false;
     }
@@ -49,24 +60,15 @@ float get_distance( int width_pixel ){
 
 
 void calculate(const cv::Mat &img, cv::Mat &processedImage) {
-    cv::Mat reziedMat;
-
-    cv::resize(img, reziedMat,
-               cv::Size(768, 1024));  // to half size or even smaller
-
-
-    processedImage = reziedMat;
 
     // RGB THRESHOLD
     cv::Mat rgbMat, rgbThreshold;
 
-
-    cv::cvtColor(reziedMat, rgbMat, cv::COLOR_BGR2RGB);
+    cv::cvtColor(img, rgbMat, cv::COLOR_BGR2RGB);
     cv::inRange(rgbMat,
                 cv::Scalar(RGB_RED[0], RGB_GREEN[0], RGB_BLUE[0]),
                 cv::Scalar(RGB_RED[1], RGB_GREEN[1], RGB_BLUE[1]),
                 rgbThreshold);
-
 
     // END RGB
 
@@ -75,7 +77,7 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     cv::Mat rgbThresholdOutput;
 
-    cv::bitwise_and(reziedMat, reziedMat, rgbThresholdOutput, rgbThreshold);
+    cv::bitwise_and(img, img, rgbThresholdOutput, rgbThreshold);
 //
     cv::imshow("RGB", rgbThresholdOutput);
 
@@ -96,7 +98,7 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
 
     cv::medianBlur(hsvThreshold, medianBlurMat, MEDIAN_BLUR_LEVEL);
 
-    cv::imshow("BLUE", medianBlurMat);
+    cv::imshow("BLUR", medianBlurMat);
     //contour detection
     vector<contour_type> contours;
     vector<cv::Vec4i> hierarchy; //throwaway, needed for function
@@ -108,7 +110,9 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
     vector<contour_type> contour_hulls;
     for (int i = 0; i < (int) contours.size(); i++) {
         contour_type contour = contours[i];
-        if (isValidArea(contour)) {
+        if (isValidArea( processedImage.rows,
+                         processedImage.cols,
+                         contour)) {
             contour_type hull;
             cv::convexHull(contour, hull);
             contour_hulls.push_back(hull);
@@ -122,6 +126,7 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
     //contour_to_loop = contours;
 
     cv::Point robot_center( processedImage.cols / 2, processedImage.rows);
+    cv::Point top_center( processedImage.cols / 2, 0 );
 
     for (size_t i = 0; i < contour_to_loop.size(); i++)
     {
@@ -136,7 +141,6 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
             double centerX = (centerMass.m10) / (centerMass.m00);
             double centerY = (centerMass.m01) / (centerMass.m00);
             cv::Point center(centerX, centerY);
-
             cv::drawMarker(processedImage, center, MY_PURPLE, 1);
 
             // draw line from robot to center mass
@@ -152,9 +156,21 @@ void calculate(const cv::Mat &img, cv::Mat &processedImage) {
             // calculate distance
             float distance;
 
+
+//            void putText(Mat& img, const string& text, Point org,
+//                         int fontFace, double fontScale,
+//                         Scalar color,
+//                         int thickness=1, int lineType=8, bool bottomLeftOrigin=false )¶
+
+            //cv::putText(processedImage, to_string(angle), center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
+            cv::putText(processedImage, to_string(distance), center, cv::FONT_HERSHEY_DUPLEX, 1.0, MY_GREEN );
             distance = get_distance(rect.width);
 
 
         }
     }
+
+    cv::line(processedImage, robot_center, top_center, MY_WHITE, 2);
+
+
 }

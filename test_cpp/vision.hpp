@@ -14,9 +14,8 @@ using namespace std;
 typedef std::vector<cv::Point> contour_type;
 
 const int CUBE_LENGTH = 13;
+const double SIDE_RATIO = 1.2;
 const int CAMERA_FOCAL_LENGTH = 1200;
-
-
 
 /*
  *  Color Schemes
@@ -32,17 +31,17 @@ const cv::Scalar MY_WHITE (255,255,255);
  *  RGB Threshold Levels
  */
 
-const int RGB_RED[2] =   {150,255};
-const int RGB_GREEN[2] = {93,255};
-const int RGB_BLUE[2] =  {0,111};
+const int RGB_RED[2] =   {86,255};
+const int RGB_GREEN[2] = {131,255};
+const int RGB_BLUE[2] =  {11,90};
 
 /**
  *  HSV Threshold Levels
  *
  */
-const int HSV_HUE[2] = {0,38};
-const int HSV_SAT[2] = {78,255};
-const int HSV_VAL[2] = {64,255};
+const int HSV_HUE[2] = {19,38};
+const int HSV_SAT[2] = {105,240};
+const int HSV_VAL[2] = {143,169};
 
 
 /**
