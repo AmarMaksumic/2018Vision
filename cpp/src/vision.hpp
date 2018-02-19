@@ -50,9 +50,12 @@ struct VisionResultsPackage {
 typedef std::vector<cv::Point> contour_type;
 
 const int RES_X = 320, RES_Y = 240;
-const int MIN_HUE = 55, MAX_HUE = 65;
-const int MIN_SAT = 0, MAX_SAT = 255;
-const int MIN_VAL = 50, MAX_VAL = 255;
+const int MIN_RED = 86, MAX_RED = 255;
+const int MIN_GREEN = 131, MAX_GREEN = 255;
+const int MIN_BLUE = 22, MAX_BLUE = 244;
+const int MIN_HUE = 19, MAX_HUE = 38;
+const int MIN_SAT = 109, MAX_SAT = 240;
+const int MIN_VAL = 143, MAX_VAL = 169;
 
 const double
 MIN_AREA = 0.001, MAX_AREA = 1000000,
