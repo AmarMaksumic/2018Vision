@@ -3,7 +3,7 @@
 
 //Include OpenCV
 #include <opencv2/opencv.hpp>
-#include <opencv2/videoio.hpp>
+//#include <opencv2/videoio.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
@@ -33,7 +33,7 @@ const cv::Scalar MY_WHITE (255,255,255);
 
 const int RGB_RED[2] =   {86,255};
 const int RGB_GREEN[2] = {131,255};
-const int RGB_BLUE[2] =  {11,90};
+const int RGB_BLUE[2] = {22,224};
 
 /**
  *  HSV Threshold Levels
@@ -42,7 +42,6 @@ const int RGB_BLUE[2] =  {11,90};
 const int HSV_HUE[2] = {19,38};
 const int HSV_SAT[2] = {105,240};
 const int HSV_VAL[2] = {143,169};
-
 
 /**
  *  HSL Threshold Levels

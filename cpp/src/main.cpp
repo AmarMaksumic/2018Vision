@@ -7,8 +7,6 @@ using namespace std;
 shared_ptr<NetworkTable> myNetworkTable; //our networktable for reading/writing
 string netTableAddress = "192.168.1.34"; //address of the rio
 
-//useful for testing OpenCV drawing to see you can modify an image
-void fillCircle (cv::Mat img, int rad, cv::Point center);
 void pushToNetworkTables (VisionResultsPackage info);
 
 //camera parameters
@@ -82,11 +80,6 @@ int main () {
     //initialize raw & processed image matrices
     cv::Mat cameraFrame, processedImage;
 
-    if (verbose) {
-        printf ("Data header:\n%s", 
-            VisionResultsPackage::createCSVHeader().c_str());
-    }
-
     //take each frame from the pipeline
     for (long long frame = 0; ; frame++) {
         //have to alternate from bad settings to good settings on some cameras
@@ -115,7 +108,6 @@ int main () {
           
             //pass the results back out
             IplImage outImage = (IplImage) processedImage;
-            printf ("results string: %s\n", info.createCSVLine().c_str());
             if (verbose) {
                 printf ("Out image stats: (depth %d), (nchannels %d)\n", 
                     outImage.depth, outImage.nChannels);
@@ -132,18 +124,12 @@ int main () {
     return 0;
 }
 
-void fillCircle (cv::Mat img, int rad, cv::Point center) {
-    int thickness = -1;
-    int lineType = 8;
-    cv::circle (img, center, rad, cv::Scalar(0, 0, 255), thickness, lineType);
-}
-
 void pushToNetworkTables (VisionResultsPackage info) {
-    myNetworkTable -> PutString ("VisionResults", info.createCSVLine());
-    myNetworkTable -> PutString ("VisionResultsHeader", info.createCSVHeader());
-    myNetworkTable -> PutNumber ("Sample Hue", info.sampleHue);
-    myNetworkTable -> PutNumber ("Sample Sat", info.sampleSat);
-    myNetworkTable -> PutNumber ("Sample Val", info.sampleVal);
+    myNetworkTable -> PutNumber ("CenterPoint X", info.centerPoint.x);
+    myNetworkTable -> PutNumber ("CenterPoint Y", info.centerPoint.y);
+    myNetworkTable -> PutNumber ("Distance", info.distance);
+    myNetworkTable -> PutNumber ("Angle", info.angle);
+    myNetworkTable -> PutBoolean ("Valid", info.valid);
     myNetworkTable -> Flush();
 }
 

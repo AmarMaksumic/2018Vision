@@ -3,6 +3,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
 #include <vector>
 #include <iostream>
 #include <utility>
@@ -11,48 +12,21 @@
 using namespace std;
 
 struct VisionResultsPackage {
-    i64 timestamp;
-    bool valid;
-	cv::Point midPoint;
-    cv::Point ul, ur, ll, lr;
-	double upperWidth, lowerWidth;
-	double leftHeight, rightHeight;
-	int sampleHue, sampleSat, sampleVal;
-
-    static string createCSVHeader () {
-        return 
-            "Timestamp,"
-            "Valid,"
-            "Midpoint_x,Midpoint_y,"
-            "UL_x,UL_y,"
-            "UR_x,UR_y,"
-            "LL_x,LL_y,"
-            "LR_x,LR_y,"
-            "UpperWidth,LowerWidth,"
-            "LeftHeight,RightHeight";
-    }
-
-    string createCSVLine () {
-        stringstream ss;
-        ss << timestamp << ",";
-        ss << valid << ","; //either 0 or 1
-        ss << midPoint.x << "," << midPoint.y << ",";
-        ss << ul.x << "," << ul.y << ",";
-        ss << ur.x << "," << ur.y << ",";
-        ss << ll.x << "," << ll.y << ",";
-        ss << lr.x << "," << lr.y << ",";
-        ss << upperWidth << "," << lowerWidth << ",";
-        ss << leftHeight << "," << rightHeight;
-        return ss.str();
-    }
+	i64 timestamp;
+	cv::Point centerPoint;
+	float distance, angle;
+	bool valid;
 };
 
 typedef std::vector<cv::Point> contour_type;
 
 const int RES_X = 320, RES_Y = 240;
-const int MIN_HUE = 55, MAX_HUE = 65;
-const int MIN_SAT = 0, MAX_SAT = 255;
-const int MIN_VAL = 50, MAX_VAL = 255;
+const int MIN_RED = 86, MAX_RED = 255;
+const int MIN_GREEN = 131, MAX_GREEN = 255;
+const int MIN_BLUE = 22, MAX_BLUE = 244;
+const int MIN_HUE = 19, MAX_HUE = 38;
+const int MIN_SAT = 109, MAX_SAT = 240;
+const int MIN_VAL = 143, MAX_VAL = 169;
 
 const double
 MIN_AREA = 0.001, MAX_AREA = 1000000,
@@ -72,6 +46,37 @@ MIN_AREA_RAT = 0.85, MAX_AREA_RAT = 100; //cvxhull area / contour area
  */ 
 VisionResultsPackage calculate(const cv::Mat &bgr, cv::Mat &processedImage);
 void drawOnImage (cv::Mat &img, VisionResultsPackage info);
-VisionResultsPackage processingFailurePackage(ui64 time);
+
+const int CUBE_LENGTH = 13;
+const int CAMERA_FOCAL_LENGTH = 1200;
+/*
+ *  Color Schemes
+ */
+const cv::Scalar MY_RED (0, 0, 255);
+const cv::Scalar MY_BLUE (255, 0, 0);
+const cv::Scalar MY_GREEN (0, 255, 0);
+const cv::Scalar MY_PURPLE (255, 0, 255);
+const cv::Scalar MY_WHITE (255,255,255);
+/**
+ *  RGB Threshold Levels
+ */
+const int RGB_RED[2] = {86,255};
+const int RGB_GREEN[2] = {131,255};
+const int RGB_BLUE[2] = {22,224};
+/**
+ *  HSV Threshold Levels
+ *
+ */
+const int HSV_HUE[2] = {19,38};
+const int HSV_SAT[2] = {109,240};
+const int HSV_VAL[2] = {143,169};
+/**
+ *  HSL Threshold Levels
+ */
+const int HSL_HUE[2] =   {150,255};
+const int HSL_SAT[2] = {93,255};
+const int HSL_LUM[2] =  {0,111};
+
+const int MEDIAN_BLUR_LEVEL = 5;  // must be ODD!
 
 #endif

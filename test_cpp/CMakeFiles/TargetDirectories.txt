@@ -1,3 +1,0 @@
-/Users/wailea/THHS/2018Vision/test_cpp/CMakeFiles/rebuild_cache.dir
-/Users/wailea/THHS/2018Vision/test_cpp/CMakeFiles/edit_cache.dir
-/Users/wailea/THHS/2018Vision/test_cpp/CMakeFiles/DisplayImage.dir
