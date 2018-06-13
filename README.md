@@ -1,6 +1,6 @@
 ## 2018 Vision
 
-this repository is divided into 2 implementations, each self contained
+This repository is divided into 2 implementations, each self contained
 
  1. Python27 / python2.7
  2. CPP / c++
